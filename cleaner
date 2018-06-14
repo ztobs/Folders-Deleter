@@ -1,0 +1,53 @@
+<?php
+
+/**
+ * Author: Donztobs 
+ * Author Domain: http://tobilukan.com
+ * Description: Script when set on cron of 5 minutes will delete folders specified recursively
+ **/
+
+
+//  Configurations
+ini_set('max_execution_time', 0);
+ini_set('memory_limit', '1024M');
+error_reporting(0);
+date_default_timezone_set("Africa/Lagos");
+$time_to_delete = 5;
+
+
+
+
+$dirs = array_filter(glob('*='), 'is_dir'); // retreive all directories having "="
+
+foreach ($dirs as $dir) {
+	$creation_time_stamp = filectime($dir); // get creation date
+	$creation_date = date("Y-m-d H:i:s", $creation_time_stamp);
+	$low_limit = strtotime("-$time_to_delete minutes");
+
+
+	if($low_limit > $creation_time_stamp) // listing folders older than 5 minutes
+	{
+		removeDirectory($dir);
+		echo "Deleted \"$dir\" ($creation_date)<br>";
+	}
+	
+}
+
+
+
+
+/**
+ * Function deletes folder recusively
+ * @param String $path
+ **/
+
+function removeDirectory($path) {
+ 	$visible_files = glob($path . '/*');
+ 	$hidden_files = glob($path . '/{.}*', GLOB_BRACE);
+ 	$files = array_merge($visible_files, $hidden_files);
+	foreach ($files as $file) {
+		is_dir($file) ? removeDirectory($file) : unlink($file);
+	}
+	rmdir($path);
+ 	return;
+}
